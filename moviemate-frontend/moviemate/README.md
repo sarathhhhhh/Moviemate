@@ -54,7 +54,7 @@ Create a .env file in the root of the frontend folder:
 
 ```
 VITE_API_URL=http://localhost:8000
-VITE_OMDB_KEY=your_omdb_key_here
+VITE_OMDB_KEY=b68a4b18
 ```
 
 You can get a free OMDB key at https://www.omdbapi.com/apikey.aspx
