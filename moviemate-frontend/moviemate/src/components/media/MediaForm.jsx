@@ -8,7 +8,7 @@ import {
   GENRES, PLATFORMS, STATUS, STATUS_LABELS, MEDIA_TYPES, MEDIA_TYPE_LABELS,
 } from '../../constants/mediaConstants';
 import styles from './MediaForm.module.css';
-
+import TMDBSearch from './TMDBSearch';
 /** Default empty form state */
 const EMPTY_FORM = {
   title:            '',
@@ -64,7 +64,19 @@ export default function MediaForm({ initialData = null, onSubmit, onClose, isLoa
   function set(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+    // When user picks a TMDB result, pre-fill matching form fields
+
   }
+  function handleTMDBSelect(tmdbItem) {
+  setForm((prev) => ({
+    ...prev,
+    title:      tmdbItem.title      || prev.title,
+    type:       tmdbItem.type       || prev.type,
+    year:       tmdbItem.year       || prev.year,
+    director:   tmdbItem.director   || prev.director,
+    poster_url: tmdbItem.poster_url || prev.poster_url,
+  }));
+}
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -78,18 +90,24 @@ export default function MediaForm({ initialData = null, onSubmit, onClose, isLoa
     const payload = { ...form };
     if (!isTVShow) {
       delete payload.total_episodes;
-      delete payload.watched_episodes;
+      delete payload.episodes_watched;
     }
     // Convert numeric strings to numbers
-    if (payload.year)             payload.year             = Number(payload.year);
-    if (payload.total_episodes)   payload.total_episodes   = Number(payload.total_episodes);
-    if (payload.watched_episodes) payload.watched_episodes = Number(payload.watched_episodes);
+    payload.year             = payload.year             ? Number(payload.year)             : null;
+    payload.total_episodes   = payload.total_episodes   ? Number(payload.total_episodes)   : null;
+    payload.episodes_watched = payload.episodes_watched ? Number(payload.episodes_watched) : null;
+    payload.rating           = payload.rating           ? Number(payload.rating)           : null;
 
     await onSubmit(payload);
   }
 
   return (
     <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      <div className={styles.tmdbSection}>
+  <p className={styles.tmdbLabel}>🎬 Search to auto-fill from TMDB</p>
+  <TMDBSearch onSelect={handleTMDBSelect} />
+  <p className={styles.tmdbHint}>Pick a result to fill title, year, type and poster — then complete the rest.</p>
+</div>
       {/* Type toggle */}
       <div className={styles.typeToggle}>
         {Object.entries(MEDIA_TYPE_LABELS).map(([value, label]) => (
